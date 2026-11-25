@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { productos } from "../../data/productos.js";
-import { useCarrito } from "../context/CarritoContext";
+import { useProductos, Producto } from "@/utils/productos";
+import { useCarrito } from "@/app/context/CarritoContext";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-function ItemProducto({ producto, onAgregar }) {
+function ItemProducto({ producto, onAgregar }: { producto: Producto; onAgregar: (p: Producto) => void }) {
     const url = "/productos/" + producto.id;
     return (
         <div className="col-12 col-sm-6 col-md-4 mb-4">
@@ -22,9 +21,15 @@ function ItemProducto({ producto, onAgregar }) {
                         <p className="fs-4 fw-bold text-black mb-3">${producto.precio_nuevo.toLocaleString('es-CL')}</p>
                         <div className="d-grid gap-2">
                             <Link href={url} className="btn btn-sm boton-detalle">Ver detalle</Link>
-                            <button className="btn btn-sm boton-carrito" onClick={() => onAgregar(producto)}>
-                                Añadir al carrito
-                            </button>
+                            {producto.enStock ? (
+                                <button className="btn btn-sm boton-carrito" onClick={() => onAgregar(producto)}>
+                                    Añadir al carrito
+                                </button>
+                            ) : (
+                                <button className="btn btn-sm btn-secondary" disabled>
+                                    Agotado
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -34,8 +39,8 @@ function ItemProducto({ producto, onAgregar }) {
 }
 
 export default function Productos() {
-    // traemos la funcion agregarAlCarrito para usarla acá
     const { agregarAlCarrito } = useCarrito();
+    const { productos, cargando, error } = useProductos();
 
     // Lógica del filtro de categorías
     const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("Todas");
@@ -58,39 +63,48 @@ export default function Productos() {
             <div className="container py-5 flex-grow-1">
                 <div className="text-center mb-5">
                     <h1 className="fw-bold">PRODUCTOS</h1>
-                    <p className="text-muted">Mostrando {productosFiltrados.length} productos disponibles</p>
+                    {!cargando && !error && (
+                        <p className="text-muted">Mostrando {productosFiltrados.length} productos disponibles</p>
+                    )}
                     <hr />
                 </div>
 
-                {/* Filtros de categorías */}
-                <div className="row justify-content-center g-3 mb-5">
-                    {categorias.map((cat) => (
-                        <div className="col-6 col-md-3 col-lg-2" key={cat}>
-                            <div
-                                onClick={() => setCategoriaSeleccionada(cat)}
-                                className={`card text-center shadow-sm h-100 justify-content-center ${categoriaSeleccionada === cat ? 'border-primary border-3' : 'border-light'}`}
-                                style={{ cursor: "pointer", minHeight: "80px" }}
-                            >
-                                <div className="card-body p-2 d-flex align-items-center justify-content-center">
-                                    <span className={`fw-bold ${categoriaSeleccionada === cat ? 'text-primary' : 'text-muted'}`}>
-                                        {cat}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    ))}
-                </div>
+                {cargando && <p className="text-center text-muted">Cargando productos...</p>}
+                {error && <p className="text-center text-danger">{error}</p>}
 
-                {/* Lista de productos */}
-                <div className="row g-4">
-                    {productosFiltrados.map((unProducto) => (
-                        <ItemProducto 
-                            producto={unProducto} 
-                            key={unProducto.id} 
-                            onAgregar={agregarAlCarrito} 
-                        />
-                    ))}
-                </div>
+                {!cargando && !error && (
+                    <>
+                        {/* Filtros de categorías */}
+                        <div className="row justify-content-center g-3 mb-5">
+                            {categorias.map((cat) => (
+                                <div className="col-6 col-md-3 col-lg-2" key={cat}>
+                                    <div
+                                        onClick={() => setCategoriaSeleccionada(cat)}
+                                        className={`card text-center shadow-sm h-100 justify-content-center ${categoriaSeleccionada === cat ? 'border-primary border-3' : 'border-light'}`}
+                                        style={{ cursor: "pointer", minHeight: "80px" }}
+                                    >
+                                        <div className="card-body p-2 d-flex align-items-center justify-content-center">
+                                            <span className={`fw-bold ${categoriaSeleccionada === cat ? 'text-primary' : 'text-muted'}`}>
+                                                {cat}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Lista de productos */}
+                        <div className="row g-4">
+                            {productosFiltrados.map((unProducto) => (
+                                <ItemProducto
+                                    producto={unProducto}
+                                    key={unProducto.id}
+                                    onAgregar={agregarAlCarrito}
+                                />
+                            ))}
+                        </div>
+                    </>
+                )}
             </div>
             <Footer />
         </div>
