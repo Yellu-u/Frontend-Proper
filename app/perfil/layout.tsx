@@ -6,6 +6,7 @@ import '@/app/globals.css'
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useAuth } from '@/app/context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 const enlaces = [
     { href: '/perfil', texto: 'Mi perfil', icono: 'bi-person' },
@@ -15,8 +16,15 @@ const enlaces = [
 
 export default function PerfilLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const { sesion } = useAuth();
+    const router = useRouter();
+    const { sesion, cerrarSesion } = useAuth();
     const primerNombre = sesion?.nombreCompleto?.split(' ')[0] ?? 'Usuario';
+    const inicial = primerNombre.charAt(0).toUpperCase();
+
+    const handleCerrarSesion = () => {
+    cerrarSesion();
+    router.push('/home');
+    };
 
     return (
     <div className="d-flex flex-column min-vh-100 login-wrapper">
@@ -28,7 +36,7 @@ export default function PerfilLayout({ children }: { children: React.ReactNode }
                 <aside className="col-md-3">
                 <div className="perfil-sidebar">
                     <div className="perfil-sidebar-header">
-                    <div className="perfil-avatar"><i className="bi bi-person"></i></div>
+                    <div className="perfil-avatar">{inicial}</div>
                     <span>Hola, {primerNombre}</span>
                     </div>
                     <nav className="perfil-nav">
@@ -42,6 +50,11 @@ export default function PerfilLayout({ children }: { children: React.ReactNode }
                         {e.texto}
                         </Link>
                     ))}
+
+                    <button type="button" className="perfil-link perfil-salir" onClick={handleCerrarSesion}>
+                        <i className="bi bi-box-arrow-right"></i>
+                        Cerrar sesión
+                    </button>
                     </nav>
                 </div>
                 </aside>
