@@ -31,6 +31,7 @@ export default function RegistroPage() {
                                 body: JSON.stringify({
                                         nombreUsuario: correo,
                                         correo: correo,
+                                        nombreCompleto: nombre,
                                         contrasena: contrasena,
                                 }),
                         });

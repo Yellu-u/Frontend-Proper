@@ -45,6 +45,7 @@ export default function LoginPage() {
                         iniciarSesion({
                                 token: data.token,
                                 nombreUsuario: data.nombreUsuario,
+                                nombreCompleto: data.nombreCompleto,
                                 roles: data.roles,
                         });
 

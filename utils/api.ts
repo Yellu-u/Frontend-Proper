@@ -3,6 +3,7 @@ export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:9090
 export type Sesion = {
         token: string;
         nombreUsuario: string;
+        nombreCompleto?: string;
         roles: string[];
 };
 
