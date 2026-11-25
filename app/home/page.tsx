@@ -1,23 +1,29 @@
+'use client';
+
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-// IMPORTAMOS LA CONSTANTE PRODUCTOS
-import { productos } from '@/data/productos';
+import { useProductos } from '@/utils/productos';
+import { useAuth } from '@/app/context/AuthContext';
 
 export default function HomePage() {
+        const { productos, cargando, error } = useProductos();
+        const { sesion, cargando: cargandoSesion } = useAuth();
         const destacados = productos.slice(0, 4);
 
         return (
                 <div className="d-flex flex-column min-vh-100">
                         <Navbar />
 
-                        <div className="container mt-3 mb-2">
-                                <div className="text-end small">
-                                        <Link href="/iniciar-sesion" className="text-proper text-decoration-none fw-bold">Iniciar sesión</Link>
-                                        <span className="text-muted mx-2">|</span>
-                                        <Link href="/crear-sesion" className="text-proper text-decoration-none fw-bold">Registrar usuario</Link>
+                        {!cargandoSesion && !sesion && (
+                                <div className="container mt-3 mb-2">
+                                        <div className="text-end small">
+                                                <Link href="/iniciar-sesion" className="text-proper text-decoration-none fw-bold">Iniciar sesión</Link>
+                                                <span className="text-muted mx-2">|</span>
+                                                <Link href="/crear-sesion" className="text-proper text-decoration-none fw-bold">Registrar usuario</Link>
+                                        </div>
                                 </div>
-                        </div>
+                        )}
 
                         <main className="flex-grow-1">
                                 <div className="container-text container mt-4 mb-5">
@@ -39,7 +45,6 @@ export default function HomePage() {
                                                                 alt="Productos Proper"
                                                                 className="img-fluid rounded shadow-sm"
                                                                 style={{ maxHeight: '300px', objectFit: 'cover' }}
-
                                                         />
                                                 </div>
                                         </div>
@@ -47,6 +52,10 @@ export default function HomePage() {
 
                                 <div className="container mb-5">
                                         <h2 className="text-center text-proper fw-bold mb-4">Productos Destacados</h2>
+
+                                        {cargando && <p className="text-center text-muted">Cargando productos...</p>}
+                                        {error && <p className="text-center text-danger">{error}</p>}
+
                                         <div className="row g-4">
                                                 {destacados.map((prod) => (
                                                         <div className="col-sm-6 col-md-3" key={prod.id}>
@@ -57,9 +66,11 @@ export default function HomePage() {
                                                                                 <h5 className="tituloProducto text-proper fw-bold">{prod.nombre}</h5>
 
                                                                                 <div className="my-2">
-                                                                                        <span className="text-danger text-decoration-line-through me-2 small">
-                                                                                                ${prod.precio_descuento.toLocaleString('es-CL')}
-                                                                                        </span>
+                                                                                        {prod.precio_descuento > prod.precio_nuevo && (
+                                                                                                <span className="text-danger text-decoration-line-through me-2 small">
+                                                                                                        ${prod.precio_descuento.toLocaleString('es-CL')}
+                                                                                                </span>
+                                                                                        )}
                                                                                         <span className="fw-bold fs-5">${prod.precio_nuevo.toLocaleString('es-CL')}</span>
                                                                                 </div>
 

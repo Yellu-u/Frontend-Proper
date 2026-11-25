@@ -1,18 +1,31 @@
 "use client";
 
-import { Suspense } from "react"; // <--- 1. Importamos Suspense
+import { Suspense } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { productos } from "../../../data/productos.js"; 
+import { useProducto } from "@/utils/productos";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useCarrito } from "../../context/CarritoContext";
+import { useCarrito } from "@/app/context/CarritoContext";
 
 function DetalleProductoContenido() {
-    const params = useParams(); 
-    const id = Number(params.slug); 
-    const producto = productos.find(p => p.id === id);
+    const params = useParams();
+    const id = Number(params.slug);
+    const { producto, cargando, error } = useProducto(id);
     const { agregarAlCarrito } = useCarrito();
+
+    if (cargando) {
+        return <div className="text-center py-5"><h3>Cargando producto...</h3></div>;
+    }
+
+    if (error) {
+        return (
+            <div className="text-center py-5">
+                <h2 className="text-danger">{error}</h2>
+                <Link href="/productos" className="btn btn-primary mt-3">Volver a la tienda</Link>
+            </div>
+        );
+    }
 
     if (!producto) {
         return (
@@ -37,9 +50,15 @@ function DetalleProductoContenido() {
                 <hr />
                 <h2 className="fw-bold text-success mb-4">${producto.precio_nuevo.toLocaleString('es-CL')}</h2>
                 <div className="d-grid gap-2 d-md-block">
-                    <button className="btn btn-success btn-lg me-md-2" onClick={() => agregarAlCarrito(producto)}>
-                        Añadir al carrito
-                    </button>
+                    {producto.enStock ? (
+                        <button className="btn btn-success btn-lg me-md-2" onClick={() => agregarAlCarrito(producto)}>
+                            Añadir al carrito
+                        </button>
+                    ) : (
+                        <button className="btn btn-secondary btn-lg me-md-2" disabled>
+                            Agotado
+                        </button>
+                    )}
                     <Link href="/productos" className="btn btn-outline-secondary btn-lg">Volver a la tienda</Link>
                 </div>
             </div>
@@ -47,7 +66,6 @@ function DetalleProductoContenido() {
     );
 }
 
-// 3. El componente principal exportado envuelve todo en Suspense
 export default function DetalleProducto() {
     return (
         <div className="d-flex flex-column min-vh-100 bg-light">
