@@ -450,3 +450,35 @@ h5 {
   font-size: 3.5rem;
   color: #aeb8cc;
 }
+
+.perfil-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #203359;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.perfil-salir {
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  margin-top: 0.5rem;
+  border-top: 1px solid #d6d6d6;
+  border-radius: 0 0 10px 10px;
+  padding-top: 0.9rem;
+  color: #b02a37;
+  cursor: pointer;
+}
+
+.perfil-salir:hover {
+  background: #fbeaec;
+  color: #b02a37;
+}

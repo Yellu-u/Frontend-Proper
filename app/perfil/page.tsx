@@ -1,48 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { validarCorreo, validarContrasena } from '@/utils/validaciones';
-
-// Datos de ejemplo: luego los reemplazas por los que vengan de tu backend
-const datosIniciales = {
-    nombre: 'Benjamin Perez',
-    correo: 'benjamin@gmail.com',
-    telefono: '+56912345678',
-    nacimiento: '2003-09-26',
-    genero: 'Masculino',
-    rut: '12.345.678-9',
-};
+import { useAuth } from '@/app/context/AuthContext';
 
 export default function MiPerfilPage() {
-    const [datos, setDatos] = useState(datosIniciales);
+    const { sesion } = useAuth();
+
+    const [nombre, setNombre] = useState('');
+    const [correo, setCorreo] = useState('');
     const [editandoDatos, setEditandoDatos] = useState(false);
 
     const [contrasena, setContrasena] = useState('');
     const [confirmar, setConfirmar] = useState('');
     const [editandoClave, setEditandoClave] = useState(false);
 
-    const cambiar = (campo: keyof typeof datos, valor: string) =>
-        setDatos({ ...datos, [campo]: valor });
+    {/* Se muestra la información que se ingresó la pagina de registro*/}
+    useEffect(() => {
+        if (!sesion) return;
+        setNombre(sesion.nombreCompleto ??'');
+        setCorreo(sesion.nombreUsuario);
+    }, [sesion]);
 
     const guardarDatos = () => {
-        if (!validarCorreo(datos.correo)) {
-        alert('El correo debe ser un @gmail.com o un @duoc.cl y tener máximo 100 caracteres');
-        return;
+        if (!validarCorreo(correo)) {
+            alert('El correo debe ser un @gmail.com o un @duoc.cl y tener máximo 100 caracteres');
+            return;
         }
-        // TODO: enviar al backend con fetch(`${API_URL}/...`)
         setEditandoDatos(false);
     };
 
     const guardarClave = () => {
         if (!validarContrasena(contrasena)) {
-        alert('La contraseña debe tener entre 4 y 10 caracteres');
-        return;
+            alert('La contraseña debe tener entre 4 y 10 caracteres');
+            return;
         }
         if (contrasena !== confirmar) {
-        alert('Las contraseñas no coinciden');
-        return;
+            alert('Las contraseñas no coinciden');
+            return;
         }
-        // TODO: enviar al backend
         setContrasena('');
         setConfirmar('');
         setEditandoClave(false);
@@ -50,7 +46,7 @@ export default function MiPerfilPage() {
 
     return (
         <>
-        {/* DATOS PERSONALES */}
+        {/* Mi Perfil */}
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h4 className="fw-bold mb-0">Mi perfil</h4>
             <button
@@ -65,40 +61,16 @@ export default function MiPerfilPage() {
             <div className="mb-3">
             <label htmlFor="nombre" className="form-label fw-bold small">Nombre</label>
             <input id="nombre" className="form-control" disabled={!editandoDatos}
-                value={datos.nombre} onChange={(e) => cambiar('nombre', e.target.value)} />
-            </div>
-            <div className="mb-3">
-            <label htmlFor="correo" className="form-label fw-bold small">Correo</label>
-            <input id="correo" type="email" className="form-control" disabled={!editandoDatos}
-                value={datos.correo} onChange={(e) => cambiar('correo', e.target.value)} />
-            </div>
-            <div className="mb-3">
-            <label htmlFor="telefono" className="form-label fw-bold small">Teléfono</label>
-            <input id="telefono" className="form-control" disabled={!editandoDatos}
-                value={datos.telefono} onChange={(e) => cambiar('telefono', e.target.value)} />
-            </div>
-            <div className="mb-3">
-            <label htmlFor="nacimiento" className="form-label fw-bold small">Fecha de nacimiento</label>
-            <input id="nacimiento" type="date" className="form-control" disabled={!editandoDatos}
-                value={datos.nacimiento} onChange={(e) => cambiar('nacimiento', e.target.value)} />
-            </div>
-            <div className="mb-3">
-            <label htmlFor="genero" className="form-label fw-bold small">Género</label>
-            <select id="genero" className="form-select" disabled={!editandoDatos}
-                value={datos.genero} onChange={(e) => cambiar('genero', e.target.value)}>
-                <option>Masculino</option>
-                <option>Femenino</option>
-                <option>Otro</option>
-            </select>
+                value={nombre} onChange={(e) => setNombre(e.target.value)} />
             </div>
             <div>
-            <label htmlFor="rut" className="form-label fw-bold small">RUT</label>
-            <input id="rut" className="form-control" disabled={!editandoDatos}
-                value={datos.rut} onChange={(e) => cambiar('rut', e.target.value)} />
+            <label htmlFor="correo" className="form-label fw-bold small">Correo</label>
+            <input id="correo" type="email" className="form-control" disabled={!editandoDatos}
+                value={correo} onChange={(e) => setCorreo(e.target.value)} />
             </div>
         </div>
 
-        {/* CONTRASEÑA */}
+        {/*Contraseña*/}
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h4 className="fw-bold mb-0">Contraseña</h4>
             <button
