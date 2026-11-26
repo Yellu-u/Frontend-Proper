@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { validarCorreo, validarContrasena } from '@/utils/validaciones';
+import { API_URL } from '@/utils/api';
 import { useAuth } from '@/app/context/AuthContext';
 
 export default function MiPerfilPage() {
-    const { sesion } = useAuth();
+    const { sesion, iniciarSesion } = useAuth();
 
     const [nombre, setNombre] = useState('');
     const [correo, setCorreo] = useState('');
@@ -15,22 +16,59 @@ export default function MiPerfilPage() {
     const [confirmar, setConfirmar] = useState('');
     const [editandoClave, setEditandoClave] = useState(false);
 
-    {/* Se muestra la información que se ingresó la pagina de registro*/}
+    {/*Rellena con los datos de la sesión*/}
     useEffect(() => {
         if (!sesion) return;
-        setNombre(sesion.nombreCompleto ??'');
-        setCorreo(sesion.nombreUsuario);
+        setNombre(sesion.nombreCompleto ?? '');
+        setCorreo(sesion.nombreUsuario ?? '');
     }, [sesion]);
 
-    const guardarDatos = () => {
+    const guardarDatos = async () => {
+        if (!sesion) return;
+
         if (!validarCorreo(correo)) {
             alert('El correo debe ser un @gmail.com o un @duoc.cl y tener máximo 100 caracteres');
             return;
         }
-        setEditandoDatos(false);
+
+        try {
+            const res = await fetch(`${API_URL}/auth/perfil`, { 
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${sesion.token}`,
+                },
+                body: JSON.stringify({ nombreCompleto: nombre, correo }),
+            });
+
+            if (res.status === 401) {
+                alert('Tu sesión expiró. Vuelve a iniciar sesión.');
+                return;
+            }
+            if (!res.ok) {
+                alert(await res.text());
+                return;
+            }
+
+            const data = await res.json();
+
+            // Actualiza la sesión para que el menú y la página muestren lo nuevo
+            iniciarSesion({
+                ...sesion,
+                token: data.token,
+                nombreCompleto: data.nombreCompleto,
+                nombreUsuario: data.nombreUsuario,
+            });
+
+            setEditandoDatos(false);
+        } catch {
+            alert('No se pudo conectar con el servidor. Verifica que el gateway esté en ejecución.');
+        }
     };
 
-    const guardarClave = () => {
+    const guardarClave = async () => {
+        if (!sesion) return;
+
         if (!validarContrasena(contrasena)) {
             alert('La contraseña debe tener entre 4 y 10 caracteres');
             return;
@@ -39,14 +77,38 @@ export default function MiPerfilPage() {
             alert('Las contraseñas no coinciden');
             return;
         }
-        setContrasena('');
-        setConfirmar('');
-        setEditandoClave(false);
+
+        try {
+            const res = await fetch(`${API_URL}/auth/perfil/contrasena`, {  
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${sesion.token}`,
+                },
+                body: JSON.stringify({ contrasena }),
+            });
+
+            if (res.status === 401) {
+                alert('Tu sesión expiró. Vuelve a iniciar sesión.');
+                return;
+            }
+            if (!res.ok) {
+                alert('No se pudo cambiar la contraseña');
+                return;
+            }
+
+            setContrasena('');
+            setConfirmar('');
+            setEditandoClave(false);
+            alert('Contraseña actualizada');
+        } catch {
+            alert('No se pudo conectar con el servidor.');
+        }
     };
 
     return (
         <>
-        {/* Mi Perfil */}
+        {/* DATOS DE LA CUENTA */}
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h4 className="fw-bold mb-0">Mi perfil</h4>
             <button
@@ -70,7 +132,7 @@ export default function MiPerfilPage() {
             </div>
         </div>
 
-        {/*Contraseña*/}
+        {/* CONTRASEÑA */}
         <div className="d-flex justify-content-between align-items-center mb-3">
             <h4 className="fw-bold mb-0">Contraseña</h4>
             <button
